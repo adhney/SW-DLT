@@ -370,6 +370,8 @@ def show_progress(data_stream, curr=0, total=0):
 
 
 def format_processing(process_stream):
+    if not isinstance(process_stream, dict) or "status" not in process_stream:
+        return
     if process_stream["status"] == "started":
         print(f'\r{Consts.CYELLOW}Processing{Consts.ENDL}', end="")
     elif process_stream["status"] == "finished":
