@@ -428,11 +428,12 @@ def main():
 
     except Exception as exc_url:
         # All raised exceptions are handled here and send the user back to the shortcut with a message
-        if str(exc_url.args[0]) not in [Consts.DERROR_EXC]:
-            b64_err = base64.b64encode(exc_url.args[0].encode()).decode()
+        err_msg = str(exc_url.args[0]) if exc_url.args else str(exc_url)
+        if err_msg not in [Consts.DERROR_EXC]:
+            b64_err = base64.b64encode(err_msg.encode()).decode()
             UNK_EXC = '{{"output_code":"exception","exc_trace":"{0}"}}'.format(b64_err)
             return f'shortcuts://run-shortcut?name=SW-DLT&input=text&text={urllib.parse.quote(UNK_EXC)}'
-        return f'shortcuts://run-shortcut?name=SW-DLT&input=text&text={urllib.parse.quote(str(exc_url.args[0]))}'
+        return f'shortcuts://run-shortcut?name=SW-DLT&input=text&text={urllib.parse.quote(err_msg)}'
 
 
 if __name__ == "__main__":
