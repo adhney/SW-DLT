@@ -360,7 +360,7 @@ def show_progress(data_stream, curr=0, total=0):
         print(
             f'\rLoading: {Consts.CYELLOW}{curr/total:.1%}{Consts.ENDL}', end="")
         return
-    else:
+    elif isinstance(data_stream, dict) and "status" in data_stream:
         if data_stream["status"] == "downloading":
             print(
                 f"\rDownloading: {Consts.CYELLOW}{data_stream['_percent_str'].strip()}{Consts.ENDL}", end="")
