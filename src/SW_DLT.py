@@ -248,10 +248,24 @@ class SW_DLT:
 
     def gallery_download(self):
         try:
-            # Creating temp folder to store media
-            os.makedirs(self.file_id, exist_ok=True)
-            base_cmd = "gallery-dl {0} --range \"{1}\" --cookies-from-browser safari".format(
-                self.media_url, self.gallery_range)
+            username = self.url_info.get("username") or "unknown"
+            save_dir = self.build_save_path(username)
+
+            if save_dir:
+                dest_dir = save_dir
+            else:
+                dest_dir = self.file_id
+            os.makedirs(dest_dir, exist_ok=True)
+
+            # Build base command with scope-aware range
+            range_flag = ""
+            if self.scope == "--single" and self.gallery_range:
+                range_flag = f'--range "{self.gallery_range}"'
+            elif self.scope == "--single":
+                range_flag = '--range "1"'
+
+            base_cmd = "gallery-dl {0} {1} --cookies-from-browser safari".format(
+                self.media_url, range_flag).strip()
 
             # Pre-scan to count total items
             scan_cmd = base_cmd + " --no-download"
@@ -260,30 +274,38 @@ class SW_DLT:
             total_items = max(total_items, 1)
 
             # Actual download with progress tracking
-            dl_cmd = base_cmd + " --directory {0}".format(self.file_id)
+            dl_cmd = base_cmd + ' --dest {0} --directory ""'.format(dest_dir)
             curr_item = 0
             with subprocess.Popen(dl_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True) as gdl:
                 for entry in gdl.stdout:
                     curr_item += 1
-                    show_progress("manual", curr_item, total_items)        
-                
-            files = os.listdir(self.file_id)
-            # No files returned, raises Exception
+                    show_progress("manual", curr_item, total_items)
+
+            files = os.listdir(dest_dir)
             if len(files) == 0:
                 raise OSError()
 
-            # Single item, directly outputs the item
+            # Instagram auto-save: return saved response
+            if save_dir:
+                output = {
+                    "output_code": "saved",
+                    "folder_path": save_dir,
+                    "file_count": len(files),
+                    "file_title": self.date_id
+                }
+
+            # Non-Instagram single item: return file directly
             elif len(files) < 2:
-                file = "{0}/{1}".format(self.file_id, files[0])
+                file = "{0}/{1}".format(dest_dir, files[0])
                 output = {
                     "output_code": "success",
                     "file_name": os.path.abspath(file),
                     "file_title": self.date_id
                 }
 
-            # Mutiple items, zips temp folder and returns it
+            # Non-Instagram multiple items: zip and return
             else:
-                shutil.make_archive(self.file_id, "zip", self.file_id)
+                shutil.make_archive(self.file_id, "zip", dest_dir)
                 output = {
                     "output_code": "success",
                     "file_name": os.path.abspath(self.file_id + ".zip"),
