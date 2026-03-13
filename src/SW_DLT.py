@@ -161,12 +161,14 @@ class SW_DLT:
 
         dl_options = {
             "format": default_format if self.video_res == "-d" else custom_format,
-            "noplaylist": True,
-            "playlist_items": "1-1",
             "outtmpl": f'{self.file_id}.%(ext)s',
             "format_sort": ["res", "ext:mp4:m4a", "codec:avc:m4a"],
             **self.ytdlp_globals
         }
+
+        if self.scope == "--single":
+            dl_options["noplaylist"] = True
+            dl_options["playlist_items"] = "1-1"
 
         try:
             # Returns shortcuts redirect URL with downloaded file data, any exception is re-thrown
@@ -178,12 +180,14 @@ class SW_DLT:
     def single_audio(self):
         dl_options = {
             "format": "bestaudio[ext*=4]/bestaudio[ext=mp3]/best[ext=mp4]/best",
-            "noplaylist": True,
-            "playlist_items": "1-1",
             "postprocessors": [{"key": "FFmpegExtractAudio", "preferredcodec": "m4a"}],
             "outtmpl": f'{self.file_id}.%(ext)s',
             **self.ytdlp_globals
         }
+
+        if self.scope == "--single":
+            dl_options["noplaylist"] = True
+            dl_options["playlist_items"] = "1-1"
 
         try:
             # Returns shortcuts redirect URL with downloaded file data, any exception is re-thrown
