@@ -198,9 +198,40 @@ class SW_DLT:
             meta_data = vid_obj.extract_info(self.media_url, download=False)
             if meta_data is None:
                 raise Exception(Consts.DERROR_EXC)
+
             vid_title = meta_data.get("title", self.date_id)
+
+            # Resolve username from metadata if not available from URL
+            username = self.url_info.get("username")
+            if not username and self.url_info["platform"] == "instagram":
+                username = meta_data.get("uploader") or meta_data.get("channel") or "unknown"
+
+            save_dir = self.build_save_path(username)
+
+            # If Instagram auto-save: adjust outtmpl and scope
+            if save_dir:
+                dl_options["outtmpl"] = os.path.join(
+                    save_dir, f"{self.date_id}_%(title)s.%(ext)s"
+                )
+                if self.scope == "--all":
+                    dl_options.pop("playlist_items", None)
+                    dl_options.pop("noplaylist", None)
+
+            vid_obj.params.update(dl_options)
             vid_obj.download([self.media_url])
 
+        # Instagram auto-save: return saved response
+        if save_dir:
+            files = [f for f in os.listdir(save_dir) if f.startswith(self.date_id)]
+            output = {
+                "output_code": "saved",
+                "folder_path": save_dir,
+                "file_count": len(files),
+                "file_title": vid_title
+            }
+            return f'shortcuts://run-shortcut?name=SW-DLT&input=text&text={urllib.parse.quote(json.dumps(output))}'
+
+        # Non-Instagram: existing behavior (find file by file_id)
         for file in os.listdir():
             if file.startswith(self.file_id):
                 output = {
@@ -209,8 +240,7 @@ class SW_DLT:
                     "file_title": vid_title
                 }
                 return f'shortcuts://run-shortcut?name=SW-DLT&input=text&text={urllib.parse.quote(json.dumps(output))}'
-        # If for some reason the above doesn't find the downloaded file, we raise generic Exception
-        raise Exception(Consts.DERROR)
+        raise Exception(Consts.DERROR_EXC)
 
     def gallery_download(self):
         try:
