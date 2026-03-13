@@ -11,12 +11,58 @@ import base64
 import json
 import sys
 import os
+import re
 
 # Constants class
 class Consts:
     CYELLOW, CGREEN, CBLUE, SBOLD, ENDL = "\033[93m", "\033[92m", "\033[94m", "\033[1m", "\033[0m"
     DERROR_EXC = '{"output_code":"exception","exc_trace":"vars.downloadError"}'
-    
+
+
+def parse_url(url):
+    parsed = urllib.parse.urlparse(url)
+    hostname = parsed.hostname or ""
+    path = parsed.path.rstrip("/")
+
+    # Instagram story: /stories/<username>/<id> or /stories/<username>
+    story_match = re.match(r"/stories/([^/]+)(?:/(\d+))?", path)
+    if "instagram.com" in hostname and story_match:
+        return {
+            "platform": "instagram",
+            "username": story_match.group(1),
+            "content_type": "stories",
+            "has_item_id": story_match.group(2) is not None
+        }
+
+    # Instagram post: /p/<shortcode>
+    post_match = re.match(r"/p/([^/]+)", path)
+    if "instagram.com" in hostname and post_match:
+        return {
+            "platform": "instagram",
+            "username": None,
+            "content_type": "posts",
+            "has_item_id": True
+        }
+
+    # Instagram reel: /reel/<shortcode>
+    reel_match = re.match(r"/reel/([^/]+)", path)
+    if "instagram.com" in hostname and reel_match:
+        return {
+            "platform": "instagram",
+            "username": None,
+            "content_type": "reels",
+            "has_item_id": True
+        }
+
+    # Fallback: use domain as username, generic type
+    domain = hostname.replace("www.", "")
+    return {
+        "platform": "other",
+        "username": domain or "unknown",
+        "content_type": "other",
+        "has_item_id": False
+    }
+
 
 class SW_DLT:
 
