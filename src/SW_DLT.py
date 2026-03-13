@@ -389,8 +389,9 @@ def main():
     try:
         globals()["yt_dlp"] = __import__("yt_dlp")
         # Hashes all arguments to generate unique ID
+        hash_args = [a for a in sys.argv if a not in ("--single", "--all")]
         file_id = "SW_DLT_DL_{}".format(hashlib.md5(
-            str(sys.argv).encode("utf-8")).hexdigest()[0:20])
+            str(hash_args).encode("utf-8")).hexdigest()[0:20])
 
         sw_dlt_inst = SW_DLT(file_id, *sys.argv[1:])
         header = f'{Consts.SBOLD}SW-DLT{Consts.ENDL}'
@@ -417,7 +418,8 @@ def main():
         print(info_msgs[sys.argv[2]])
         
         with open('SW_DLT_DL_metadata.json', 'w') as metadata:
-            args = ' '.join(map(str, sys.argv[2:]))
+            meta_args = [a for a in sys.argv[2:] if a not in ("--single", "--all")]
+            args = ' '.join(map(str, meta_args))
             json.dump({f"{sys.argv[1]}": args}, metadata)
         
         return sw_dlt_inst.run()
