@@ -39,7 +39,11 @@ Compatible with **iOS/iPadOS 18, 26**
 
 ## Roadmap Features
 
-- [ ] Implement full progress bar on gallery-dl downloads
+- [x] Implement full progress bar on gallery-dl downloads
+
+- [x] Multi-step download flow for Instagram (just this one / all)
+
+- [x] Auto-save downloads to username/content-type folders
 
 - [ ] Add quality options for video playlists
 

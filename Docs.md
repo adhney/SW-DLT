@@ -101,3 +101,26 @@ The following steps will allow you to uninstall all files used by SW-DLT, withou
 2. Switch the 'uninstall' toggle from 'False' to 'True' as instructed by comments
 3. Run the Shortcut and accept the prompt
 4. Do not run the shortcut again or else it will be reinstalled.
+
+## Multi-Step Downloads (Instagram)
+
+When downloading from Instagram, SW-DLT can detect if the URL is a story, post, or reel. The Shortcut will present an additional menu:
+
+- **Just this one**: Downloads only the specific story or post item you shared
+- **All**: Downloads all active stories from that user, or all items in a carousel post
+
+This only appears for Instagram URLs. Other platforms use the standard single-item download.
+
+## Auto-Save by Username
+
+Instagram downloads are automatically saved to a folder structure organized by username and content type:
+
+```
+Files App -> a-Shell -> Documents -> SW-DLT -> Downloads/
+  username/
+    stories/
+    posts/
+    reels/
+```
+
+Files are named with a date prefix (e.g., `2026-03-14_video.mp4`) for easy sorting. Non-Instagram downloads continue to use the share sheet as before.
