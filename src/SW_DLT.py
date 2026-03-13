@@ -67,13 +67,20 @@ def parse_url(url):
 class SW_DLT:
 
     def __init__(self, file_id, *args):
+        # Scan for scope flag (always last arg if present)
+        args = list(args)
+        self.scope = "--single"
+        if args and args[-1] in ("--single", "--all"):
+            self.scope = args.pop()
+
         # args[0]: media URL to download
         # args[1]: main process to run
         # args[2] (dependent): resolution for video, type for playlist, or range for gallery
         # args[3] (dependent): framerate for video
         self.media_url = args[0]
         self.file_id = file_id
-        self.date_id = datetime.datetime.today().strftime("%d-%m-%y-%H-%M-%S")
+        self.date_id = datetime.datetime.today().strftime("%Y-%m-%d")
+        self.url_info = parse_url(self.media_url)
         self.ytdlp_globals = {
             "color": "never",
             "quiet": True,
@@ -102,7 +109,20 @@ class SW_DLT:
             self.gallery_range = args[2].replace('"','').replace("'","") if args[1] == "-g" else ""
 
         if len(args) > 3:
-            self.video_fps = args[3]  
+            self.video_fps = args[3]
+
+    def build_save_path(self, username=None):
+        info = self.url_info
+        if info["platform"] != "instagram":
+            return None
+        name = username or info["username"] or "unknown"
+        content_type = info["content_type"]
+        save_dir = os.path.join(
+            os.environ["HOME"], "Documents", "SW-DLT", "Downloads",
+            name, content_type
+        )
+        os.makedirs(save_dir, exist_ok=True)
+        return save_dir
 
     @staticmethod
     def update_check():
