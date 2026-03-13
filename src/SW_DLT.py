@@ -214,9 +214,9 @@ class SW_DLT:
 
             # If Instagram auto-save: adjust outtmpl and scope
             if save_dir:
-                dl_options["outtmpl"] = os.path.join(
+                dl_options["outtmpl"] = {"default": os.path.join(
                     save_dir, f"{self.date_id}_%(title)s.%(ext)s"
-                )
+                )}
                 if self.scope == "--all":
                     dl_options.pop("playlist_items", None)
                     dl_options.pop("noplaylist", None)
@@ -428,27 +428,15 @@ def main():
 
     except Exception as exc_url:
         # All raised exceptions are handled here and send the user back to the shortcut with a message
-        import traceback
-        full_tb = traceback.format_exc()
         err_msg = str(exc_url.args[0]) if exc_url.args else str(exc_url)
-        # Include traceback in error so we can see exactly where it crashes
-        debug_msg = f"{err_msg}\n\nTRACEBACK:\n{full_tb}"
         if err_msg not in [Consts.DERROR_EXC]:
-            b64_err = base64.b64encode(debug_msg.encode()).decode()
+            b64_err = base64.b64encode(err_msg.encode()).decode()
             UNK_EXC = '{{"output_code":"exception","exc_trace":"{0}"}}'.format(b64_err)
             return f'shortcuts://run-shortcut?name=SW-DLT&input=text&text={urllib.parse.quote(UNK_EXC)}'
         return f'shortcuts://run-shortcut?name=SW-DLT&input=text&text={urllib.parse.quote(err_msg)}'
 
 
 if __name__ == "__main__":
-    import traceback
-    try:
-        result = main()
-        subprocess.run("open " + result)
-    except Exception as e:
-        # Print full traceback to a-Shell so user can see exactly where it crashes
-        print("\n\033[91m=== SW-DLT DEBUG TRACEBACK ===\033[0m")
-        traceback.print_exc()
-        print("\033[91m=== END TRACEBACK ===\033[0m")
-        input("Press Enter to dismiss...")
+    result = main()
+    subprocess.run("open " + result)
     
