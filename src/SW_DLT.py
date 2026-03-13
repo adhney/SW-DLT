@@ -437,5 +437,14 @@ def main():
 
 
 if __name__ == "__main__":
-    subprocess.run("open " + main())
+    import traceback
+    try:
+        result = main()
+        subprocess.run("open " + result)
+    except Exception as e:
+        # Print full traceback to a-Shell so user can see exactly where it crashes
+        print("\n\033[91m=== SW-DLT DEBUG TRACEBACK ===\033[0m")
+        traceback.print_exc()
+        print("\033[91m=== END TRACEBACK ===\033[0m")
+        input("Press Enter to dismiss...")
     
