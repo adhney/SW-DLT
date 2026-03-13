@@ -96,6 +96,7 @@ class SW_DLT:
         dl_options = {
             "format": default_format if self.video_res == "-d" else custom_format,
             "noplaylist": True,
+            "playlist_items": "1-1",
             "outtmpl": f'{self.file_id}.%(ext)s',
             "format_sort": ["res", "ext:mp4:m4a", "codec:avc:m4a"],
             **self.ytdlp_globals
@@ -112,6 +113,7 @@ class SW_DLT:
         dl_options = {
             "format": "bestaudio[ext*=4]/bestaudio[ext=mp3]/best[ext=mp4]/best",
             "noplaylist": True,
+            "playlist_items": "1-1",
             "postprocessors": [{"key": "FFmpegExtractAudio", "preferredcodec": "m4a"}],
             "outtmpl": f'{self.file_id}.%(ext)s',
             **self.ytdlp_globals
@@ -128,6 +130,8 @@ class SW_DLT:
         # Uses yt-dlp to download single video or audio items
         with yt_dlp.YoutubeDL(dl_options) as vid_obj:
             meta_data = vid_obj.extract_info(self.media_url, download=False)
+            if meta_data is None:
+                raise Exception(Consts.DERROR_EXC)
             vid_title = meta_data.get("title", self.date_id)
             vid_obj.download([self.media_url])
 
