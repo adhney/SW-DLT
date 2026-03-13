@@ -95,7 +95,7 @@ class SW_DLT:
 
         dl_options = {
             "format": default_format if self.video_res == "-d" else custom_format,
-            "playlist_items": "1-1",
+            "noplaylist": True,
             "outtmpl": f'{self.file_id}.%(ext)s',
             "format_sort": ["res", "ext:mp4:m4a", "codec:avc:m4a"],
             **self.ytdlp_globals
@@ -111,7 +111,7 @@ class SW_DLT:
     def single_audio(self):
         dl_options = {
             "format": "bestaudio[ext*=4]/bestaudio[ext=mp3]/best[ext=mp4]/best",
-            "playlist_items": "1-1",
+            "noplaylist": True,
             "postprocessors": [{"key": "FFmpegExtractAudio", "preferredcodec": "m4a"}],
             "outtmpl": f'{self.file_id}.%(ext)s',
             **self.ytdlp_globals
