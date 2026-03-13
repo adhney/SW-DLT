@@ -150,12 +150,22 @@ class SW_DLT:
         try:
             # Creating temp folder to store media
             os.makedirs(self.file_id, exist_ok=True)
-            dl_cmd = "gallery-dl {0} --range \"{1}\" --directory {2} --cookies-from-browser safari".format(
-                self.media_url, self.gallery_range, self.file_id)
-                
+            base_cmd = "gallery-dl {0} --range \"{1}\" --cookies-from-browser safari".format(
+                self.media_url, self.gallery_range)
+
+            # Pre-scan to count total items
+            scan_cmd = base_cmd + " --no-download"
+            with subprocess.Popen(scan_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True) as scan:
+                total_items = sum(1 for _ in scan.stdout)
+            total_items = max(total_items, 1)
+
+            # Actual download with progress tracking
+            dl_cmd = base_cmd + " --directory {0}".format(self.file_id)
+            curr_item = 0
             with subprocess.Popen(dl_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True) as gdl:
                 for entry in gdl.stdout:
-                    show_progress("manual", 1, 1)        
+                    curr_item += 1
+                    show_progress("manual", curr_item, total_items)        
                 
             files = os.listdir(self.file_id)
             # No files returned, raises Exception
@@ -219,11 +229,11 @@ def show_progress(data_stream, curr=0, total=0):
     # data_stream type of data received, can be manual (for gallery-dl downloads), util (for utility processes)
     # it can also be yt-dlp download data streams
     if data_stream == "manual":
-        if curr != total:
+        if curr < total:
             print(
-                f'\rDownloading: {Consts.CYELLOW}{curr/total:.1%}{Consts.ENDL}', end="")
+                f'\x1b[1K\rDownloading: {Consts.CYELLOW}{curr}/{total} ({curr/total:.0%}){Consts.ENDL}', end="")
             return
-        print(f'\x1b[1K\r{Consts.CGREEN}Downloaded{Consts.ENDL}')
+        print(f'\x1b[1K\r{Consts.CGREEN}Downloaded {curr}/{total}{Consts.ENDL}')
     elif data_stream == "util":
         print(
             f'\rLoading: {Consts.CYELLOW}{curr/total:.1%}{Consts.ENDL}', end="")
