@@ -222,7 +222,15 @@ class SW_DLT:
                     dl_options.pop("noplaylist", None)
 
             vid_obj.params.update(dl_options)
-            vid_obj.download([self.media_url])
+
+            # For --all stories: use base URL without item ID to get all stories
+            download_url = self.media_url
+            if self.scope == "--all" and self.url_info["content_type"] == "stories" and self.url_info["has_item_id"]:
+                parsed = urllib.parse.urlparse(self.media_url)
+                base_path = re.sub(r"/stories/([^/]+)/\d+/?", r"/stories/\1/", parsed.path)
+                download_url = parsed._replace(path=base_path).geturl()
+
+            vid_obj.download([download_url])
 
         # Instagram auto-save: show alert with save confirmation
         if save_dir:
