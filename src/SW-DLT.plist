@@ -2003,7 +2003,7 @@ GLOBAL SETTINGS INITIALIZATION</string>
 					<string>WFTextTokenString</string>
 				</dict>
 				<key>WFAlertActionTitle</key>
-				<string>Exception Alert</string>
+				<string>SW-DLT</string>
 			</dict>
 		</dict>
 		<dict>
@@ -2049,7 +2049,7 @@ GLOBAL SETTINGS INITIALIZATION</string>
 					<string>WFTextTokenString</string>
 				</dict>
 				<key>WFAlertActionTitle</key>
-				<string>Exception Alert</string>
+				<string>SW-DLT</string>
 			</dict>
 		</dict>
 		<dict>
