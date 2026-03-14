@@ -224,16 +224,14 @@ class SW_DLT:
             vid_obj.params.update(dl_options)
             vid_obj.download([self.media_url])
 
-        # Instagram auto-save: return saved response
+        # Instagram auto-save: show alert with save confirmation
         if save_dir:
             files = [f for f in os.listdir(save_dir) if f.startswith(self.date_id)]
-            output = {
-                "output_code": "saved",
-                "folder_path": save_dir,
-                "file_count": len(files),
-                "file_title": vid_title
-            }
-            return f'shortcuts://run-shortcut?name=SW-DLT&input=text&text={urllib.parse.quote(json.dumps(output))}'
+            short_path = save_dir.split("SW-DLT/")[-1] if "SW-DLT/" in save_dir else save_dir
+            msg = f"Saved {len(files)} file(s) to {short_path}"
+            b64_msg = base64.b64encode(msg.encode()).decode()
+            output = '{{"output_code":"exception","exc_trace":"{0}"}}'.format(b64_msg)
+            return f'shortcuts://run-shortcut?name=SW-DLT&input=text&text={urllib.parse.quote(output)}'
 
         # Non-Instagram: existing behavior (find file by file_id)
         for file in os.listdir():
@@ -285,14 +283,13 @@ class SW_DLT:
             if len(files) == 0:
                 raise OSError()
 
-            # Instagram auto-save: return saved response
+            # Instagram auto-save: show alert with save confirmation
             if save_dir:
-                output = {
-                    "output_code": "saved",
-                    "folder_path": save_dir,
-                    "file_count": len(files),
-                    "file_title": self.date_id
-                }
+                short_path = save_dir.split("SW-DLT/")[-1] if "SW-DLT/" in save_dir else save_dir
+                msg = f"Saved {len(files)} file(s) to {short_path}"
+                b64_msg = base64.b64encode(msg.encode()).decode()
+                output = '{{"output_code":"exception","exc_trace":"{0}"}}'.format(b64_msg)
+                return f'shortcuts://run-shortcut?name=SW-DLT&input=text&text={urllib.parse.quote(output)}'
 
             # Non-Instagram single item: return file directly
             elif len(files) < 2:
