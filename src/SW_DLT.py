@@ -206,8 +206,10 @@ class SW_DLT:
 
     def single_download(self, dl_options):
         # Uses yt-dlp to download single video or audio items
+        download_url = self.get_download_url()
+
         with yt_dlp.YoutubeDL(dl_options) as vid_obj:
-            meta_data = vid_obj.extract_info(self.media_url, download=False)
+            meta_data = vid_obj.extract_info(download_url, download=False)
             if meta_data is None:
                 raise Exception(Consts.DERROR_EXC)
 
@@ -230,7 +232,7 @@ class SW_DLT:
                     dl_options.pop("noplaylist", None)
 
             vid_obj.params.update(dl_options)
-            vid_obj.download([self.get_download_url()])
+            vid_obj.download([download_url])
 
         # Instagram auto-save: show alert with save confirmation
         if save_dir:
