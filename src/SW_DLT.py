@@ -70,8 +70,8 @@ class SW_DLT:
         # Scan for scope flag (always last arg if present)
         args = list(args)
         self.scope = "--single"
-        if args and args[-1] in ("--single", "--all"):
-            self.scope = args.pop()
+        if args and args[-1].strip() in ("--single", "--all"):
+            self.scope = args.pop().strip()
 
         # args[0]: media URL to download
         # args[1]: main process to run
@@ -110,6 +110,14 @@ class SW_DLT:
 
         if len(args) > 3:
             self.video_fps = args[3]
+
+    def get_download_url(self):
+        """For --all stories, strip the item ID to get all stories from the user."""
+        if self.scope == "--all" and self.url_info["content_type"] == "stories" and self.url_info["has_item_id"]:
+            parsed = urllib.parse.urlparse(self.media_url)
+            base_path = re.sub(r"/stories/([^/]+)/\d+/?", r"/stories/\1/", parsed.path)
+            return parsed._replace(path=base_path).geturl()
+        return self.media_url
 
     def build_save_path(self, username=None):
         info = self.url_info
@@ -222,15 +230,7 @@ class SW_DLT:
                     dl_options.pop("noplaylist", None)
 
             vid_obj.params.update(dl_options)
-
-            # For --all stories: use base URL without item ID to get all stories
-            download_url = self.media_url
-            if self.scope == "--all" and self.url_info["content_type"] == "stories" and self.url_info["has_item_id"]:
-                parsed = urllib.parse.urlparse(self.media_url)
-                base_path = re.sub(r"/stories/([^/]+)/\d+/?", r"/stories/\1/", parsed.path)
-                download_url = parsed._replace(path=base_path).geturl()
-
-            vid_obj.download([download_url])
+            vid_obj.download([self.get_download_url()])
 
         # Instagram auto-save: show alert with save confirmation
         if save_dir:
@@ -271,7 +271,7 @@ class SW_DLT:
                 range_flag = '--range "1"'
 
             base_cmd = "gallery-dl {0} {1} --cookies-from-browser safari".format(
-                self.media_url, range_flag).strip()
+                self.get_download_url(), range_flag).strip()
 
             # Pre-scan to count total items
             scan_cmd = base_cmd + " --no-download"
@@ -423,6 +423,7 @@ def main():
         subprocess.run("clear")
         print(header)
         print(info_msgs[sys.argv[2]])
+        print(f'{Consts.CYELLOW}Scope: {sw_dlt_inst.scope} | URL: {sw_dlt_inst.get_download_url()[:60]}{Consts.ENDL}')
         
         with open('SW_DLT_DL_metadata.json', 'w') as metadata:
             meta_args = [a for a in sys.argv[2:] if a not in ("--single", "--all")]
